@@ -1,0 +1,93 @@
+#include <SoftwareSerial.h>
+
+SoftwareSerial gsm(3, 2);  // RX, TX
+
+#define ENA 9
+#define IN1 5
+#define IN2 6
+
+String line = "";
+
+void setup() {
+  Serial.begin(9600);
+  gsm.begin(9600);
+
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  stopMotor();
+
+  delay(3000);
+
+  gsm.println("AT");
+  delay(1000);
+  gsm.println("AT+CMGF=1");          // SMS text mode
+  delay(1000);
+  gsm.println("AT+CSCS=\"GSM\"");    // GSM charset
+  delay(1000);
+  gsm.println("AT+CNMI=2,2,0,0,0"); // New SMS indication
+  delay(1000);
+
+  Serial.println("System Ready");
+}
+
+void loop() {
+  while (gsm.available()) {
+    char c = gsm.read();
+
+    if (c == '\n') {
+      processLine(line);
+      line = "";
+    } else if (c != '\r') {
+      line += c;
+    }
+  }
+}
+
+void processLine(String msg) {
+  msg.trim();
+  msg.toUpperCase();
+
+  if (msg.length() == 0) return;
+
+  Serial.println("RX: " + msg);
+
+  // Ignore GSM status lines
+  if (msg.startsWith("+CMT") || msg.startsWith("OK")) return;
+
+  if (msg.startsWith("FWD")) {
+    int spd = getSpeed(msg);
+    forward(spd);
+  }
+  else if (msg.startsWith("REV")) {
+    int spd = getSpeed(msg);
+    reverse(spd);
+  }
+  else if (msg.startsWith("STOP")) {
+    stopMotor();
+  }
+}
+
+int getSpeed(String msg) {
+  int i = msg.indexOf(' ');
+  if (i > 0) return msg.substring(i + 1).toInt();
+  return 150;
+}
+
+void forward(int s) {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, s);
+}
+
+void reverse(int s) {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, s);
+}
+
+void stopMotor() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, 0);
+}
