@@ -27,7 +27,7 @@ Instead of manual switches or wired control, the motor can be operated by sendin
 | 2 | DC Motor | 1 | Mechanical output |
 | 3 | SIM800 GSM Module | 1 | Receives SMS commands |
 | 4 | L298N Motor Driver | 1 | Controls motor speed & direction |
-| 5 | Level Shifter | 1 | Voltage level matching |
+| 5 | Level translator | 1 | Voltage level matching |
 | 6 | External Power Supply | 1 | Powers motor & GSM |
 | 7 | Breadboard | 1 | Circuit setup |
 | 8 | Jumper Wires | As required | Connections |
